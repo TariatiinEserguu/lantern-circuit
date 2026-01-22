@@ -49,11 +49,22 @@ class Board:
 
     @classmethod
     def load(cls, layout):
+        if not layout or not layout[0] or any(len(row) != len(layout[0]) for row in layout):
+            raise ValueError('A room must be a nonempty rectangle')
+        width, height = len(layout[0]), len(layout)
         tiles = {token: set() for token in '#.$ab'}
         for y, row in enumerate(layout):
             for x, token in enumerate(row):
+                if (x in (0, width - 1) or y in (0, height - 1)) and token != '#':
+                    raise ValueError('The room must be enclosed by walls')
                 if token in tiles:
                     tiles[token].add((x, y))
+                elif token != ' ':
+                    raise ValueError(f'Unknown room tile {token!r}')
+        if len(tiles['a']) != 1 or len(tiles['b']) != 1:
+            raise ValueError('A room needs one start tile for each player')
+        if not tiles['$'] or len(tiles['$']) != len(tiles['.']):
+            raise ValueError('A room needs the same number of lanterns and pads')
         return cls(frozenset(tiles['#']), frozenset(tiles['.']),
                    frozenset(tiles['$']), (tiles['a'].pop(), tiles['b'].pop()),
                    len(layout[0]), len(layout))

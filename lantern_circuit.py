@@ -1,5 +1,7 @@
 """A two-player lantern puzzle."""
+import argparse
 import tkinter as tk
+from pathlib import Path
 from dataclasses import dataclass, replace
 
 BOARDS = (
@@ -45,7 +47,6 @@ CONTROLS = {
     'w': (0, 0, -1), 'a': (0, -1, 0), 's': (0, 0, 1), 'd': (0, 1, 0),
     'up': (1, 0, -1), 'left': (1, -1, 0), 'down': (1, 0, 1), 'right': (1, 1, 0),
 }
-ROOM_KEYS = {str(level + 1): level for level in range(len(BOARDS))}
 
 
 @dataclass(frozen=True)
@@ -108,9 +109,22 @@ class Board:
         return replace(self, players=tuple(players), lanterns=lanterns)
 
 
+def read_rooms(path):
+    rooms = tuple(tuple(room.splitlines()) for room in path.read_text(encoding='utf-8').strip('\n').split('\n\n'))
+    if not 1 <= len(rooms) <= 9:
+        raise ValueError('A pack must contain one to nine rooms')
+    for room in rooms:
+        Board.load(room)
+        if len(room) > 10 or len(room[0]) > 16:
+            raise ValueError('Rooms can use at most 16 columns and 10 rows')
+    return rooms
+
+
 class LanternCircuit:
-    def __init__(self, root):
+    def __init__(self, root, rooms=BOARDS):
         self.root = root
+        self.rooms = rooms
+        self.room_keys = {str(i + 1): i for i in range(len(rooms))}
         root.title('Lantern Circuit')
         root.configure(bg='#171823')
         self.canvas = tk.Canvas(root, width=700, height=548, bg='#171823', highlightthickness=0)
@@ -123,15 +137,15 @@ class LanternCircuit:
 
     def load(self, level):
         self.level = level
-        self.board = Board.load(BOARDS[level])
+        self.board = Board.load(self.rooms[level])
         self.history = []
         self.redo_history = []
         self.draw()
 
     def on_key(self, event):
         key = event.keysym.lower()
-        if key in ROOM_KEYS and self.level != ROOM_KEYS[key]:
-            self.load(ROOM_KEYS[key])
+        if key in self.room_keys and self.level != self.room_keys[key]:
+            self.load(self.room_keys[key])
             return
         if key == 'r':
             self.load(self.level)
@@ -141,7 +155,7 @@ class LanternCircuit:
         elif key == 'y' and self.redo_history:
             self.history.append(self.board)
             self.board = self.redo_history.pop()
-        elif key == 'return' and self.board.solved and self.level + 1 < len(BOARDS):
+        elif key == 'return' and self.board.solved and self.level + 1 < len(self.rooms):
             self.load(self.level + 1)
         elif key in CONTROLS and not self.board.solved:
             after = self.board.move(*CONTROLS[key])
@@ -160,7 +174,7 @@ class LanternCircuit:
         width = max(c.winfo_width(), 600)
         height = max(c.winfo_height(), 520)
         c.create_text(36, 31, anchor='w', text='Lantern Circuit', fill='#fff1dd', font=('TkDefaultFont', 23, 'bold'))
-        c.create_text(38, 68, anchor='w', text=f'Room {self.level + 1} of {len(BOARDS)}  /  Push every lantern onto a marked tile',
+        c.create_text(38, 68, anchor='w', text=f'Room {self.level + 1} of {len(self.rooms)}  /  Push every lantern onto a marked tile',
                       fill='#c6b7cb', font=('TkDefaultFont', 11))
         board = self.board
         size = min((width - 74) // board.width, (height - 160) // board.height, 62)
@@ -193,17 +207,28 @@ class LanternCircuit:
 
         status = f'{len(board.pads & board.lanterns)}/{len(board.pads)} lanterns lit  ·  {len(self.history)} moves'
         if board.solved:
-            status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
+            status = 'All rooms lit!' if self.level + 1 == len(self.rooms) else 'Room lit! Press Enter for the next room.'
         elif board.has_corner_trap:
             status = 'Lantern trapped in a corner. Press U to undo.'
         if self.level in self.best_moves:
             status += f'  ·  Best: {self.best_moves[self.level]}'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
-        c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–{len(BOARDS)} Rooms',
+        c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–{len(self.rooms)} Rooms',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))
 
 
-if __name__ == '__main__':
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--rooms', type=Path, help='Load a custom pack of rooms')
+    args = parser.parse_args(argv)
+    try:
+        rooms = read_rooms(args.rooms) if args.rooms else BOARDS
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
     root = tk.Tk()
-    game = LanternCircuit(root)
+    LanternCircuit(root, rooms)
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()

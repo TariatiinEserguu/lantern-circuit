@@ -220,11 +220,15 @@ class LanternCircuit:
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--rooms', type=Path, help='Load a custom pack of rooms')
+    parser.add_argument('--check', action='store_true', help='Validate rooms without opening a window')
     args = parser.parse_args(argv)
     try:
         rooms = read_rooms(args.rooms) if args.rooms else BOARDS
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
+    if args.check:
+        print(f'Validated {len(rooms)} room(s).')
+        return
     root = tk.Tk()
     LanternCircuit(root, rooms)
     root.mainloop()

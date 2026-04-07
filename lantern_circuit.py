@@ -73,6 +73,15 @@ class Board:
     def solved(self):
         return self.lanterns == self.pads
 
+    @property
+    def has_corner_trap(self):
+        for x, y in self.lanterns - self.pads:
+            horizontal = (x - 1, y) in self.walls or (x + 1, y) in self.walls
+            vertical = (x, y - 1) in self.walls or (x, y + 1) in self.walls
+            if horizontal and vertical:
+                return True
+        return False
+
     def move(self, player, dx, dy):
         x, y = self.players[player]
         target = x + dx, y + dy
@@ -171,6 +180,8 @@ class LanternCircuit:
         status = f'{len(board.pads & board.lanterns)}/{len(board.pads)} lanterns lit  ·  {len(self.history)} moves'
         if board.solved:
             status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
+        elif board.has_corner_trap:
+            status = 'Lantern trapped in a corner. Press U to undo.'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
         c.create_text(width / 2, height - 27, text='P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–3 Rooms',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))

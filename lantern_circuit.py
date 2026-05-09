@@ -121,7 +121,7 @@ def read_rooms(path):
 
 
 class LanternCircuit:
-    def __init__(self, root, rooms=BOARDS):
+    def __init__(self, root, rooms=BOARDS, start_room=0):
         self.root = root
         self.rooms = rooms
         self.room_keys = {str(i + 1): i for i in range(len(rooms))}
@@ -133,7 +133,7 @@ class LanternCircuit:
         self.canvas.bind('<Configure>', lambda event: self.draw())
         root.bind('<KeyPress>', self.on_key)
         self.best_moves = {}
-        self.load(0)
+        self.load(start_room)
 
     def load(self, level):
         self.level = level
@@ -220,17 +220,20 @@ class LanternCircuit:
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--rooms', type=Path, help='Load a custom pack of rooms')
+    parser.add_argument('--room', type=int, default=1, help='Room number to open first')
     parser.add_argument('--check', action='store_true', help='Validate rooms without opening a window')
     args = parser.parse_args(argv)
     try:
         rooms = read_rooms(args.rooms) if args.rooms else BOARDS
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
+    if not 1 <= args.room <= len(rooms):
+        parser.error(f'Room must be between 1 and {len(rooms)}')
     if args.check:
         print(f'Validated {len(rooms)} room(s).')
         return
     root = tk.Tk()
-    LanternCircuit(root, rooms)
+    LanternCircuit(root, rooms, args.room - 1)
     root.mainloop()
 
 

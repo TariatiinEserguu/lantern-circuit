@@ -31,3 +31,5 @@ Try the included two-room pack with `python3 lantern_circuit.py --rooms example_
 Run `python3 lantern_circuit.py --rooms my-rooms.txt` to load a pack. Write one rectangular grid per room and separate rooms with a blank line. Use `#` for walls, spaces for floor, `$` for lanterns, `.` for pads, and `a` and `b` for the two player starts. Enclose every room with walls and use the same number of pads and lanterns. Custom packs can contain up to nine rooms.
 
 Run `python3 lantern_circuit.py --rooms my-rooms.txt --check` to check the layout without opening the game. This checks the room format. Playtest the room to make sure it can be solved.
+
+Use `--room 2` to start directly in the second room of either pack.

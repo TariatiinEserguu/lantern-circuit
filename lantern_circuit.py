@@ -140,6 +140,7 @@ class LanternCircuit:
         self.board = Board.load(self.rooms[level])
         self.history = []
         self.redo_history = []
+        self.pushes = 0
         self.draw()
 
     def on_key(self, event):
@@ -150,16 +151,21 @@ class LanternCircuit:
         if key == 'r':
             self.load(self.level)
         elif key == 'u' and self.history:
+            previous = self.history.pop()
+            self.pushes -= self.board.lanterns != previous.lanterns
             self.redo_history.append(self.board)
-            self.board = self.history.pop()
+            self.board = previous
         elif key == 'y' and self.redo_history:
+            next_board = self.redo_history.pop()
+            self.pushes += self.board.lanterns != next_board.lanterns
             self.history.append(self.board)
-            self.board = self.redo_history.pop()
+            self.board = next_board
         elif key == 'return' and self.board.solved and self.level + 1 < len(self.rooms):
             self.load(self.level + 1)
         elif key in CONTROLS and not self.board.solved:
             after = self.board.move(*CONTROLS[key])
             if after is not self.board:
+                self.pushes += self.board.lanterns != after.lanterns
                 self.history.append(self.board)
                 self.board = after
                 self.redo_history.clear()
@@ -205,7 +211,7 @@ class LanternCircuit:
                     c.create_oval(cx - 15, cy - 15, cx + 15, cy + 15, fill=color, outline='')
                     c.create_text(cx, cy, text=str(player + 1), fill='#202033', font=('TkDefaultFont', 12, 'bold'))
 
-        status = f'{len(board.pads & board.lanterns)}/{len(board.pads)} lanterns lit  ·  {len(self.history)} moves'
+        status = f'{len(board.pads & board.lanterns)}/{len(board.pads)} lanterns lit  ·  {len(self.history)} moves  ·  {self.pushes} pushes'
         if board.solved:
             status = 'All rooms lit!' if self.level + 1 == len(self.rooms) else 'Room lit! Press Enter for the next room.'
         elif board.has_corner_trap:

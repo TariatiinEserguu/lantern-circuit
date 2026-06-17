@@ -200,11 +200,16 @@ class LanternCircuit:
                     c.create_line(x0 + 5, y0 + 5, x1 - 5, y0 + 5, fill='#5a526d', width=2)
                 if pos in board.pads:
                     c.create_oval(cx - 13, cy - 13, cx + 13, cy + 13, outline='#f3a654', width=2, dash=(3, 3))
+                    c.create_line(cx - 6, cy, cx + 6, cy, fill='#f3a654', width=2)
+                    c.create_line(cx, cy - 6, cx, cy + 6, fill='#f3a654', width=2)
                 if pos in board.lanterns:
                     light = '#ffe49a' if pos in board.pads else '#ed9854'
                     c.create_rectangle(cx - 13, cy - 15, cx + 13, cy + 15, fill=light, outline='#ffdb98', width=2)
                     c.create_line(cx - 7, cy - 15, cx - 7, cy + 15, fill='#9c4e3d')
                     c.create_line(cx + 7, cy - 15, cx + 7, cy + 15, fill='#9c4e3d')
+                    if pos in board.pads:
+                        c.create_line(cx - 7, cy, cx - 2, cy + 5, cx + 8, cy - 7,
+                                      fill='#432635', width=3)
                 if pos in board.players:
                     player = board.players.index(pos)
                     color = ('#a5e8d6', '#c9b0ff')[player]

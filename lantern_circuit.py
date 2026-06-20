@@ -133,6 +133,7 @@ class LanternCircuit:
         self.canvas.bind('<Configure>', lambda event: self.draw())
         root.bind('<KeyPress>', self.on_key)
         self.best_moves = {}
+        self.show_help = False
         self.load(start_room)
 
     def load(self, level):
@@ -145,6 +146,12 @@ class LanternCircuit:
 
     def on_key(self, event):
         key = event.keysym.lower()
+        if key == 'h':
+            self.show_help = not self.show_help
+            self.draw()
+            return
+        if self.show_help:
+            return
         if key in self.room_keys and self.level != self.room_keys[key]:
             self.load(self.room_keys[key])
             return
@@ -224,8 +231,15 @@ class LanternCircuit:
         if self.level in self.best_moves:
             status += f'  ·  Best: {self.best_moves[self.level]}'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
-        c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–{len(self.rooms)} Rooms',
+        c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    1–{len(self.rooms)} Rooms    H Help',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))
+        if self.show_help:
+            cx, cy = width / 2, height / 2
+            c.create_rectangle(cx - 204, cy - 78, cx + 204, cy + 78, fill='#28263a', outline='#ed9854', width=2)
+            c.create_text(cx, cy, text='Push each lantern onto a marked tile.\n\n'
+                          'WASD / Arrows · Move    U / Y · Undo / Redo\n'
+                          'R · Restart    Enter · Next room    H · Close help',
+                          fill='#fff1dd', justify='center', font=('TkDefaultFont', 11))
 
 
 def main(argv=None):

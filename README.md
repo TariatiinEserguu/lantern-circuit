@@ -14,6 +14,7 @@ Requires Python 3.10+ with Tkinter and a graphical desktop. On Debian and Ubuntu
 | --- | --- |
 | WASD | Move player 1 |
 | Arrow keys | Move player 2 |
+| H | Open or close the controls overlay |
 | U | Undo one move |
 | Y | Redo an undone move |
 | R | Restart the room |

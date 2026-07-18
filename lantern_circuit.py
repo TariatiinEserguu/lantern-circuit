@@ -30,6 +30,16 @@ BOARDS = (
         "#      . #",
         "##########",
     ),
+    (
+        "#########",
+        "#  . .  #",
+        "#   #   #",
+        "#a $ $ b#",
+        "# # . # #",
+        "#   $   #",
+        "#       #",
+        "#########",
+    ),
 )
 CONTROLS = {
     'w': (0, 0, -1), 'a': (0, -1, 0), 's': (0, 0, 1), 'd': (0, 1, 0),
@@ -183,7 +193,7 @@ class LanternCircuit:
         elif board.has_corner_trap:
             status = 'Lantern trapped in a corner. Press U to undo.'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
-        c.create_text(width / 2, height - 27, text='P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–3 Rooms',
+        c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–{len(BOARDS)} Rooms',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))
 
 

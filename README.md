@@ -34,3 +34,5 @@ Run `python3 lantern_circuit.py --rooms my-rooms.txt` to load a pack. Write one 
 Run `python3 lantern_circuit.py --rooms my-rooms.txt --check` to check the layout without opening the game. This checks the room format. Playtest the room to make sure it can be solved.
 
 Use `--room 2` to start directly in the second room of either pack.
+
+Run room validation tests with `python3 -m unittest discover`.

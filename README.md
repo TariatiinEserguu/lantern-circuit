@@ -18,6 +18,7 @@ Requires Python 3.10+ with Tkinter and a graphical desktop. On Debian and Ubuntu
 | Y | Redo an undone move |
 | R | Restart the room |
 | Enter | Continue after solving a room |
+| 1–3 | Jump to a room and start it fresh |
 
 You can push one lantern at a time. Walls, lanterns, and the other player can block a push. You can move a lantern off a marked tile to make room.
 

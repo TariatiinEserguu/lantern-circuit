@@ -35,6 +35,7 @@ CONTROLS = {
     'w': (0, 0, -1), 'a': (0, -1, 0), 's': (0, 0, 1), 'd': (0, 1, 0),
     'up': (1, 0, -1), 'left': (1, -1, 0), 'down': (1, 0, 1), 'right': (1, 1, 0),
 }
+ROOM_KEYS = {str(level + 1): level for level in range(len(BOARDS))}
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,9 @@ class LanternCircuit:
 
     def on_key(self, event):
         key = event.keysym.lower()
+        if key in ROOM_KEYS and self.level != ROOM_KEYS[key]:
+            self.load(ROOM_KEYS[key])
+            return
         if key == 'r':
             self.load(self.level)
         elif key == 'u' and self.history:
@@ -157,7 +161,7 @@ class LanternCircuit:
         if board.solved:
             status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
-        c.create_text(width / 2, height - 27, text='P1  WASD     P2  Arrows     U  Undo     Y  Redo     R  Restart',
+        c.create_text(width / 2, height - 27, text='P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–3 Rooms',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))
 
 

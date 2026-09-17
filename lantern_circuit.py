@@ -118,6 +118,7 @@ class LanternCircuit:
         root.minsize(600, 520)
         self.canvas.bind('<Configure>', lambda event: self.draw())
         root.bind('<KeyPress>', self.on_key)
+        self.best_moves = {}
         self.load(0)
 
     def load(self, level):
@@ -148,6 +149,9 @@ class LanternCircuit:
                 self.history.append(self.board)
                 self.board = after
                 self.redo_history.clear()
+        if self.board.solved:
+            moves = len(self.history)
+            self.best_moves[self.level] = min(moves, self.best_moves.get(self.level, moves))
         self.draw()
 
     def draw(self):
@@ -192,6 +196,8 @@ class LanternCircuit:
             status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
         elif board.has_corner_trap:
             status = 'Lantern trapped in a corner. Press U to undo.'
+        if self.level in self.best_moves:
+            status += f'  ·  Best: {self.best_moves[self.level]}'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
         c.create_text(width / 2, height - 27, text=f'P1 WASD    P2 Arrows    U Undo    Y Redo    R Restart    1–{len(BOARDS)} Rooms',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))

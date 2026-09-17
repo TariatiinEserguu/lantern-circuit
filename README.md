@@ -22,4 +22,4 @@ Requires Python 3.10+ with Tkinter and a graphical desktop. On Debian and Ubuntu
 
 You can push one lantern at a time. Walls, lanterns, and the other player can block a push. You can move a lantern off a marked tile to make room. The game warns you if a lantern gets stuck in a corner without a pad.
 
-Each room has its own move history. A new move after an undo clears the redo history.
+Each room has its own move history. A new move after an undo clears the redo history. Your best move count for each room is tracked until you close the game.

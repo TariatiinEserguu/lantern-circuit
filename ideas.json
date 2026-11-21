@@ -1,0 +1,8 @@
+[
+  {"name":"Make dumplings together","where":"in","cost":15,"minutes":90},
+  {"name":"Build a playlist for each other","where":"in","cost":0,"minutes":30},
+  {"name":"Try a new dessert café","where":"out","cost":20,"minutes":60},
+  {"name":"Take a sunset photo walk","where":"out","cost":0,"minutes":45},
+  {"name":"Cook a three-ingredient dinner","where":"in","cost":10,"minutes":45},
+  {"name":"Browse a bookshop and pick a book for each other","where":"out","cost":25,"minutes":75}
+]

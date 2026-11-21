@@ -93,6 +93,7 @@ class LanternCircuit:
         self.level = level
         self.board = Board.load(BOARDS[level])
         self.history = []
+        self.redo_history = []
         self.draw()
 
     def on_key(self, event):
@@ -100,7 +101,11 @@ class LanternCircuit:
         if key == 'r':
             self.load(self.level)
         elif key == 'u' and self.history:
+            self.redo_history.append(self.board)
             self.board = self.history.pop()
+        elif key == 'y' and self.redo_history:
+            self.history.append(self.board)
+            self.board = self.redo_history.pop()
         elif key == 'return' and self.board.solved and self.level + 1 < len(BOARDS):
             self.load(self.level + 1)
         elif key in CONTROLS and not self.board.solved:
@@ -108,6 +113,7 @@ class LanternCircuit:
             if after is not self.board:
                 self.history.append(self.board)
                 self.board = after
+                self.redo_history.clear()
         self.draw()
 
     def draw(self):
@@ -151,7 +157,7 @@ class LanternCircuit:
         if board.solved:
             status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
         c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
-        c.create_text(width / 2, height - 27, text='P1  WASD     P2  Arrow keys     U  Undo     R  Restart',
+        c.create_text(width / 2, height - 27, text='P1  WASD     P2  Arrows     U  Undo     Y  Redo     R  Restart',
                       fill='#c6b7cb', font=('TkDefaultFont', 10))
 
 

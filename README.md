@@ -15,7 +15,10 @@ Requires Python 3.10+ with Tkinter and a graphical desktop. On Debian and Ubuntu
 | WASD | Move player 1 |
 | Arrow keys | Move player 2 |
 | U | Undo one move |
+| Y | Redo an undone move |
 | R | Restart the room |
 | Enter | Continue after solving a room |
 
 You can push one lantern at a time. Walls, lanterns, and the other player can block a push. You can move a lantern off a marked tile to make room.
+
+Each room has its own move history. A new move after an undo clears the redo history.

@@ -1,0 +1,161 @@
+"""A two-player lantern puzzle."""
+import tkinter as tk
+from dataclasses import dataclass, replace
+
+BOARDS = (
+    (
+        "#########",
+        "#       #",
+        "#a $ .  #",
+        "#       #",
+        "#  . $ b#",
+        "#       #",
+        "#########",
+    ),
+    (
+        "#########",
+        "#   .   #",
+        "# # $ # #",
+        "#a #   b#",
+        "#   $ # #",
+        "# .     #",
+        "#########",
+    ),
+    (
+        "##########",
+        "#   #    #",
+        "#a  $ .  #",
+        "# .$#    #",
+        "#   # $ b#",
+        "#      . #",
+        "##########",
+    ),
+)
+CONTROLS = {
+    'w': (0, 0, -1), 'a': (0, -1, 0), 's': (0, 0, 1), 'd': (0, 1, 0),
+    'up': (1, 0, -1), 'left': (1, -1, 0), 'down': (1, 0, 1), 'right': (1, 1, 0),
+}
+
+
+@dataclass(frozen=True)
+class Board:
+    walls: frozenset
+    pads: frozenset
+    lanterns: frozenset
+    players: tuple
+    width: int
+    height: int
+
+    @classmethod
+    def load(cls, layout):
+        tiles = {token: set() for token in '#.$ab'}
+        for y, row in enumerate(layout):
+            for x, token in enumerate(row):
+                if token in tiles:
+                    tiles[token].add((x, y))
+        return cls(frozenset(tiles['#']), frozenset(tiles['.']),
+                   frozenset(tiles['$']), (tiles['a'].pop(), tiles['b'].pop()),
+                   len(layout[0]), len(layout))
+
+    @property
+    def solved(self):
+        return self.lanterns == self.pads
+
+    def move(self, player, dx, dy):
+        x, y = self.players[player]
+        target = x + dx, y + dy
+        if target in self.walls or target in self.players:
+            return self
+        lanterns = self.lanterns
+        if target in lanterns:
+            beyond = target[0] + dx, target[1] + dy
+            if beyond in self.walls or beyond in lanterns or beyond in self.players:
+                return self
+            lanterns = (lanterns - {target}) | {beyond}
+        players = list(self.players)
+        players[player] = target
+        return replace(self, players=tuple(players), lanterns=lanterns)
+
+
+class LanternCircuit:
+    def __init__(self, root):
+        self.root = root
+        root.title('Lantern Circuit')
+        root.configure(bg='#171823')
+        self.canvas = tk.Canvas(root, width=700, height=548, bg='#171823', highlightthickness=0)
+        self.canvas.pack(fill='both', expand=True)
+        root.minsize(600, 520)
+        self.canvas.bind('<Configure>', lambda event: self.draw())
+        root.bind('<KeyPress>', self.on_key)
+        self.load(0)
+
+    def load(self, level):
+        self.level = level
+        self.board = Board.load(BOARDS[level])
+        self.history = []
+        self.draw()
+
+    def on_key(self, event):
+        key = event.keysym.lower()
+        if key == 'r':
+            self.load(self.level)
+        elif key == 'u' and self.history:
+            self.board = self.history.pop()
+        elif key == 'return' and self.board.solved and self.level + 1 < len(BOARDS):
+            self.load(self.level + 1)
+        elif key in CONTROLS and not self.board.solved:
+            after = self.board.move(*CONTROLS[key])
+            if after is not self.board:
+                self.history.append(self.board)
+                self.board = after
+        self.draw()
+
+    def draw(self):
+        c = self.canvas
+        c.delete('all')
+        width = max(c.winfo_width(), 600)
+        height = max(c.winfo_height(), 520)
+        c.create_text(36, 31, anchor='w', text='Lantern Circuit', fill='#fff1dd', font=('TkDefaultFont', 23, 'bold'))
+        c.create_text(38, 68, anchor='w', text=f'Room {self.level + 1} of {len(BOARDS)}  /  Push every lantern onto a marked tile',
+                      fill='#c6b7cb', font=('TkDefaultFont', 11))
+        board = self.board
+        size = min((width - 74) // board.width, (height - 160) // board.height, 62)
+        left = (width - size * board.width) // 2
+        top = 88 + (height - 160 - size * board.height) // 2
+
+        for y in range(board.height):
+            for x in range(board.width):
+                pos = (x, y)
+                x0, y0 = left + x * size, top + y * size
+                x1, y1 = x0 + size, y0 + size
+                cx, cy = x0 + size / 2, y0 + size / 2
+                wall = pos in board.walls
+                floor = '#28263a' if (x + y) % 2 else '#302a41'
+                c.create_rectangle(x0, y0, x1, y1, fill='#45405a' if wall else floor, outline='#1c1b28', width=2)
+                if wall:
+                    c.create_line(x0 + 5, y0 + 5, x1 - 5, y0 + 5, fill='#5a526d', width=2)
+                if pos in board.pads:
+                    c.create_oval(cx - 13, cy - 13, cx + 13, cy + 13, outline='#f3a654', width=2, dash=(3, 3))
+                if pos in board.lanterns:
+                    light = '#ffe49a' if pos in board.pads else '#ed9854'
+                    c.create_rectangle(cx - 13, cy - 15, cx + 13, cy + 15, fill=light, outline='#ffdb98', width=2)
+                    c.create_line(cx - 7, cy - 15, cx - 7, cy + 15, fill='#9c4e3d')
+                    c.create_line(cx + 7, cy - 15, cx + 7, cy + 15, fill='#9c4e3d')
+                if pos in board.players:
+                    player = board.players.index(pos)
+                    color = ('#a5e8d6', '#c9b0ff')[player]
+                    c.create_oval(cx - 15, cy - 15, cx + 15, cy + 15, fill=color, outline='')
+                    c.create_text(cx, cy, text=str(player + 1), fill='#202033', font=('TkDefaultFont', 12, 'bold'))
+
+        status = f'{len(board.pads & board.lanterns)}/{len(board.pads)} lanterns lit  ·  {len(self.history)} moves'
+        if board.solved:
+            status = 'All rooms lit!' if self.level + 1 == len(BOARDS) else 'Room lit! Press Enter for the next room.'
+        c.create_text(width / 2, height - 57, text=status, fill='#ffe49a', font=('TkDefaultFont', 12, 'bold'))
+        c.create_text(width / 2, height - 27, text='P1  WASD     P2  Arrow keys     U  Undo     R  Restart',
+                      fill='#c6b7cb', font=('TkDefaultFont', 10))
+
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    game = LanternCircuit(root)
+    root.mainloop()

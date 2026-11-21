@@ -1,13 +1,21 @@
-# Date Night Roulette
+# Lantern Circuit
 
-Pick a date idea based on where you want to go, how much time you have, and what you want to spend.
+A small 2D puzzle for two players on one keyboard. Push the lanterns onto the marked floor tiles to light three rooms. Work together to clear tight passages, or play solo by switching between the two sets of controls.
 
-Requires Python 3.10 or newer. No packages to install.
+## Play
 
 ```sh
-python3 dates.py --where out --budget 10 --minutes 60
+python3 lantern_circuit.py
 ```
 
-Omit any filter to consider all values for it. Add your own ideas to `ideas.json`, or use `--ideas path/to/ideas.json` for a separate list. Each entry has a name, a location (`in` or `out`), estimated cost for two, and duration in minutes. Use the same currency throughout your list.
+Requires Python 3.10+ with Tkinter and a graphical desktop. On Debian and Ubuntu, install `python3-tk` if Tkinter is missing.
 
-Run the tests with `python3 -m unittest discover`.
+| Control | Action |
+| --- | --- |
+| WASD | Move player 1 |
+| Arrow keys | Move player 2 |
+| U | Undo one move |
+| R | Restart the room |
+| Enter | Continue after solving a room |
+
+You can push one lantern at a time. Walls, lanterns, and the other player can block a push. You can move a lantern off a marked tile to make room.
